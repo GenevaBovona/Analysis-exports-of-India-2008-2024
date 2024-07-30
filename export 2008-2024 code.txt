@@ -1,0 +1,62 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load the CSV file
+file_path = 'D:/Exportall.csv'  # Update the file path if necessary
+df = pd.read_csv(file_path)
+
+# Data Cleaning
+# Remove the first two rows which are metadata
+df_clean = df.drop([0, 1])
+
+# Reset the index
+df_clean.reset_index(drop=True, inplace=True)
+
+# Rename columns based on the third row
+df_clean.columns = df_clean.iloc[0]
+
+# Drop the third row as it's now the header
+df_clean = df_clean.drop(2)
+
+# Reset index again
+df_clean.reset_index(drop=True, inplace=True)
+
+# Rename columns for easier access
+df_clean.columns = ['S.No.', 'Country', '2008-2009', '%Share_2008-2009', '2009-2010', '%Share_2009-2010',
+                    '2010-2011', '%Share_2010-2011', '2011-2012', '%Share_2011-2012', '2012-2013', '%Share_2012-2013',
+                    '2013-2014', '%Share_2013-2014', '2014-2015', '%Share_2014-2015', '2015-2016', '%Share_2015-2016',
+                    '2016-2017', '%Share_2016-2017', '2017-2018', '%Share_2017-2018', '2018-2019', '%Share_2018-2019',
+                    '2019-2020', '%Share_2019-2020', '2020-2021', '%Share_2020-2021', '2021-2022', '%Share_2021-2022',
+                    '2022-2023', '%Share_2022-2023', '2023-2024', '%Share_2023-2024', '2024-2025', '%Share_2024-2025']
+
+# Remove any remaining non-numeric rows (just in case)
+df_clean = df_clean[df_clean['2008-2009'].apply(lambda x: str(x).replace(',', '').replace('.', '').isdigit())]
+
+# Convert relevant columns to numeric data types
+for col in df_clean.columns[2:]:
+    df_clean[col] = df_clean[col].str.replace(',', '').astype(float)
+
+# Handle missing values (fill with 0 for simplicity)
+df_clean.fillna(0, inplace=True)
+
+# Save the cleaned data to a new Excel file
+cleaned_file_path = 'D:/Cleaned_Exportall.xlsx'  # Update the file path if necessary
+df_clean.to_excel(cleaned_file_path, index=False)
+
+# Statistical Analysis: Describe the dataset
+stat_summary = df_clean.describe()
+print("Statistical Summary:\n", stat_summary)
+
+# Create a new DataFrame with country, year, and total export values
+years = df_clean.columns[2::2]  # Selecting only the years columns
+country_year_total = pd.melt(df_clean, id_vars=['Country'], value_vars=years,
+                             var_name='Year', value_name='Total Export Value')
+
+# Save the new DataFrame to a new Excel file
+summary_file_path = 'D:/Country_Year_Total_Export.xlsx'  # Update the file path if necessary
+country_year_total.to_excel(summary_file_path, index=False)
+
+print(f"Cleaned data saved to {cleaned_file_path}")
+print(f"Summary data saved to {summary_file_path}")
